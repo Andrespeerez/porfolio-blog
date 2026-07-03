@@ -1,0 +1,66 @@
+@page "/login"
+
+@using System.ComponentModel.DataAnnotations
+@using Application.UseCases
+@using Application.DTOs
+
+@inject NavigationManager NavigationManager
+@inject AuthenticateUser AuthenticateUserUseCase
+
+
+<h1>Login</h1>
+
+<EditForm Model="model" OnValidSubmit="HandleLogin" FormName="login">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="form-group">
+        <label>Email</label>
+        <InputText class="form-control" @bind-Value="model.Email" placeholder="Email" />
+    </div>
+    <div class="form-group">
+        <label>Password</label>
+        <InputText class="form-control" type="password" @bind-Value="model.Password"  />
+        <p></p>
+    </div>
+
+    <button>Entrar</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <p>@error</p>
+}
+
+@code 
+{
+    [SupplyParameterFromForm]
+    private LoginModel model { get; set; } = new LoginModel();
+    private string error = string.Empty;
+
+    private async Task HandleLogin()
+    {
+        error = string.Empty;
+
+        AuthResult? result = await AuthenticateUserUseCase.ExecuteAsync(model.Email, model.Password);
+
+        if (result.Success)
+        {
+            NavigationManager.NavigateTo("/admin");
+        }
+        else
+        {
+            error = "Usuario o contraseña inválidos";
+        }
+    }
+
+    public class LoginModel
+    {
+        [Required, EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        public string Password { get; set; } = string.Empty;
+    }
+}
+
+

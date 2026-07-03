@@ -1,0 +1,29 @@
+@page "/admin"
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>Panel de Admin</PageTitle>
+
+<h1>Panel de Administración</h1>
+
+<AuthorizeView>
+    <Authorized>
+        <div class="alert alert-sucess">
+            Bienvenido, <strong>@context.User.FindFirst(ClaimTypes.Email)?.Value</strong>.
+            <p>Tienes rol admin.</p>
+        </div>
+
+        <form action="api/auth/logout" method="post">
+            <button type="submit" class="btn btn-danger">
+                Cerrar sesión
+            </button>
+        </form>
+    </Authorized>
+    <NotAuthorized>
+        <p>Necesitas iniciar sesión para acceder aquí.</p>
+    </NotAuthorized>
+</AuthorizeView>
