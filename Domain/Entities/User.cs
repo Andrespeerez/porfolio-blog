@@ -7,6 +7,7 @@ public class User
     public int Id { get; set; }
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; private set; } = string.Empty;
+    public bool IsAdmin { get; private set; }
     public string Slug { get; private set; } = string.Empty;
     public string? FullName { get; set; }
     public string? PhotoUrl { get; set; }
@@ -73,6 +74,13 @@ public class User
         if (this.DeletedAt is null) return;
 
         this.DeletedAt = null;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void SetAdmin(bool isAdmin)
+    {
+        if (this.IsAdmin == isAdmin) return;
+        this.IsAdmin = isAdmin;
         this.UpdatedAt = DateTime.UtcNow;
     }
 }
