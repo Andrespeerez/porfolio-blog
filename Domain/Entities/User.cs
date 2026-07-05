@@ -44,4 +44,20 @@ public class User
         this.SocialNetworks = socialNetworks ?? this.SocialNetworks;
         this.UpdatedAt = DateTime.UtcNow;
     }
+
+    public void ChangeEmail(string newEmail)
+    {
+        if(newEmail == Email) return;
+
+        this.Email = newEmail;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void ChangePassword(string newPassword, IPasswordHasher hasher)
+    {
+        string newPasswordHashed = hasher.Hash(newPassword);
+
+        this.PasswordHash = newPasswordHashed;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
 }
