@@ -60,4 +60,20 @@ public class User
         this.PasswordHash = newPasswordHashed;
         this.UpdatedAt = DateTime.UtcNow;
     }
+
+    public void SoftDelete()
+    {
+        if (this.DeletedAt is not null) return;
+
+        this.DeletedAt = DateTime.UtcNow;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Restore()
+    {
+        if (this.DeletedAt is null) return;
+
+        this.DeletedAt = null;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
 }
