@@ -1,4 +1,4 @@
-using Application.DTOs;
+using Application.DTOs.Auth;
 using Application.UseCases;
 
 namespace Api.Auth;
