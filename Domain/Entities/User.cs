@@ -27,4 +27,21 @@ public class User
     {
         return new User() { Email = email, PasswordHash = hasher.Hash(rawPassword), CreatedAt = DateTime.UtcNow };
     }
+
+    public void UpdateProfile(string? slug, string? fullName, string? photoUrl, string? externalWebsiteUrl, string? jobTitle, string? bio, string? educationalInstitution, JsonDocument? topics, JsonDocument? socialNetworks)
+    {
+        if (this.Slug is null && slug is not null)
+        {
+            this.Slug = slug;
+        }
+        this.FullName = fullName ?? this.FullName;
+        this.PhotoUrl = photoUrl ?? this.PhotoUrl;
+        this.ExternalWebsiteUrl = externalWebsiteUrl ?? this.ExternalWebsiteUrl;
+        this.JobTitle = jobTitle ?? this.JobTitle;
+        this.Bio = bio ?? this.Bio;
+        this.EducationalInstitution = educationalInstitution ?? this.EducationalInstitution;
+        this.Topics = topics ?? this.Topics;
+        this.SocialNetworks = socialNetworks ?? this.SocialNetworks;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
 }
