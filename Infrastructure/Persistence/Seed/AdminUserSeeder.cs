@@ -47,7 +47,7 @@ public class AdminUserSeeder
             return;
         }
 
-        var user = Domain.Entities.User.Create(email, password, _passwordHasher);
+        var user = Domain.Entities.User.Create(email, password, _passwordHasher, true);
         await _userRepository.AddAsync(user);
         Console.WriteLine($"[Seed] Admin '{email}' creado.");
     }

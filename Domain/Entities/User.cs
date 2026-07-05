@@ -23,9 +23,9 @@ public class User
 
 
     // factory
-    public static User Create(string email, string rawPassword, IPasswordHasher hasher)
+    public static User Create(string email, string rawPassword, IPasswordHasher hasher, bool isAdmin = false)
     {
-        return new User() { Email = email, PasswordHash = hasher.Hash(rawPassword), CreatedAt = DateTime.UtcNow };
+        return new User() { Email = email, PasswordHash = hasher.Hash(rawPassword), CreatedAt = DateTime.UtcNow, IsAdmin = isAdmin };
     }
 
     public void UpdateProfile(string? slug, string? fullName, string? photoUrl, string? externalWebsiteUrl, string? jobTitle, string? bio, string? educationalInstitution, List<string>? topics, List<string>? socialNetworks)
