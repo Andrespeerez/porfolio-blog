@@ -1,4 +1,4 @@
-namespace Application.DTOs;
+namespace Application.DTOs.Auth;
 
 public record AuthResult(bool Success, string? Error = null)
 {

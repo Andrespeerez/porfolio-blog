@@ -1,7 +1,7 @@
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Domain.Entities;
-using Application.DTOs;
+using Application.DTOs.Auth;
 
 namespace Application.UseCases;
 

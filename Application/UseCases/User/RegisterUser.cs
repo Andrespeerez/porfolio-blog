@@ -1,4 +1,4 @@
-using Application.DTOs;
+using Application.DTOs.Auth;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Domain.Entities;

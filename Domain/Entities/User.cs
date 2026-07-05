@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Application.Interfaces.Services;
 
 namespace Domain.Entities;
@@ -15,8 +14,8 @@ public class User
     public string? JobTitle { get; set; }
     public string? Bio { get; set; }
     public string? EducationalInstitution { get; set; }
-    public JsonDocument? Topics { get; set; }
-    public JsonDocument? SocialNetworks { get; set; }
+    public List<string>? Topics { get; set; }
+    public List<string>? SocialNetworks { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
@@ -28,7 +27,7 @@ public class User
         return new User() { Email = email, PasswordHash = hasher.Hash(rawPassword), CreatedAt = DateTime.UtcNow };
     }
 
-    public void UpdateProfile(string? slug, string? fullName, string? photoUrl, string? externalWebsiteUrl, string? jobTitle, string? bio, string? educationalInstitution, JsonDocument? topics, JsonDocument? socialNetworks)
+    public void UpdateProfile(string? slug, string? fullName, string? photoUrl, string? externalWebsiteUrl, string? jobTitle, string? bio, string? educationalInstitution, List<string>? topics, List<string>? socialNetworks)
     {
         if (this.Slug is null && slug is not null)
         {
