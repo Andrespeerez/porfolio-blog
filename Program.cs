@@ -26,12 +26,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         o.LoginPath = "/login";
     });
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddAuthorization(o =>
 {
-    o.AddPolicy("AdminOnly", p => p.RequireClaim(ClaimTypes.Role, "admin"));
+    o.AddPolicy("AdminOnly", p => p.RequireRole("admin"));
 });
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
  
 // 3) Puertos -> Adaptadores
 builder.Services.AddScoped<IUserRepository, UserRepository>();
