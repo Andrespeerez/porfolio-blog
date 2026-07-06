@@ -43,6 +43,7 @@ builder.Services.AddScoped<UpdateMyProfile>();
 builder.Services.AddScoped<GetUserById>();
 builder.Services.AddScoped<GetUserBySlug>();
 builder.Services.AddScoped<CreateUserByAdmin>();
+builder.Services.AddScoped<UpdateUserByAdmin>();
 
 
 // 5) Seeder
