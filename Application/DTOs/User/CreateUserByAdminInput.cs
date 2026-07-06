@@ -4,7 +4,8 @@ namespace Application.DTOs.User;
 
 public record CreateUserByAdminInput(
     [Required, EmailAddress] string Email, 
-    [Required, StringLength(100, MinimumLength = 8)] string Password, 
+    [Required, StringLength(100, MinimumLength = 8), RegularExpression(@"^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?\"":{}|<>ñÑ])\S+$")] string Password,
+    bool? IsAdmin,
     [RegularExpression("^[a-z0-9-]+$")] string? Slug, 
     [StringLength(120)]  string? FullName, 
     [Url, StringLength(500)] string? PhotoUrl, 
