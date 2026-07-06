@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Components;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
  
@@ -27,6 +28,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddAuthorization(o =>
+{
+    o.AddPolicy("AdminOnly", p => p.RequireClaim(ClaimTypes.Role, "admin"));
+});
  
 // 3) Puertos -> Adaptadores
 builder.Services.AddScoped<IUserRepository, UserRepository>();
