@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Application.DTOs.User;
 
-public record UpdateOwnProfileInput(
+public record UpdateMyProfileInput(
     [RegularExpression("^[a-z0-9-]+$")] string? Slug, 
     [StringLength(120)] string? FullName, 
     [Url, StringLength(500)] string? PhotoUrl, 

@@ -8,33 +8,23 @@ namespace Application.UseCases;
 public class GetMyProfile
 {
     private readonly IUserRepository _userRepository;
-    private readonly ISessionManager _sessionManager;
 
     public GetMyProfile(
-        IUserRepository userRepository,
-        ISessionManager sessionManager
+        IUserRepository userRepository
     )
     {
         _userRepository = userRepository;
-        _sessionManager = sessionManager;
     }
 
-    public async Task<UserOutput?> ExecuteAsync()
+    public async Task<UserOutput?> ExecuteAsync(
+        int currentUserId
+    )
     {
-        int? myUserId = await _sessionManager.GetCurrentUserIdAsync();
+        User? myUser = await _userRepository.GetByIdAsync(currentUserId);
 
-        if (myUserId is null)
+        if (myUser is null || myUser.IsDeleted())
         {
-            return await Task.FromResult<UserOutput?>(null);
-        }
-
-        int id = (int)myUserId;
-
-        User? myUser = await _userRepository.GetByIdAsync(id);
-
-        if (myUser is null)
-        {
-            return await Task.FromResult<UserOutput?>(null);
+            return null;
         }
 
         var userOutput = UserOutput.FromEntity(myUser);

@@ -83,4 +83,6 @@ public class User
         this.IsAdmin = isAdmin;
         this.UpdatedAt = DateTime.UtcNow;
     }
+
+    public bool IsDeleted() => DeletedAt is not null;
 }
