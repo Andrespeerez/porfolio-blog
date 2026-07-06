@@ -6,4 +6,5 @@ public interface ISessionManager
 {
     Task SignInAsync(User user);
     Task SignOutAsync();
+    Task<int?> GetCurrentUserIdAsync();
 }

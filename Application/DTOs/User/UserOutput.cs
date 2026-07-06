@@ -17,4 +17,25 @@ public record UserOutput(
     DateTime CreatedAt, 
     DateTime? UpdatedAt, 
     DateTime? DeletedAt
-);
+)
+{
+    public static UserOutput FromEntity(Domain.Entities.User user)
+    {
+        return new(
+            user.Id,
+            user.Email,
+            user.Slug,
+            user.FullName,
+            user.PhotoUrl,
+            user.ExternalWebsiteUrl,
+            user.JobTitle,
+            user.Bio,
+            user.EducationalInstitution,
+            user.Topics,
+            user.SocialNetworks,
+            user.CreatedAt,
+            user.UpdatedAt,
+            user.DeletedAt
+        );
+    }
+}

@@ -23,4 +23,15 @@ public class UserRepository : IUserRepository
         await _db.Users.AddAsync(user);
         await _db.SaveChangesAsync();
     }
+
+    public Task<User?> GetByIdAsync(int id)
+    {
+        return _db.Users.FirstOrDefaultAsync(x => x.Id == id);
+    }
+
+    public async Task UpdateAsync(User user)
+    {
+        _db.Users.Update(user);
+        await _db.SaveChangesAsync();
+    }
 }

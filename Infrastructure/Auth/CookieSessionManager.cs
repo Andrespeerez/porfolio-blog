@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Domain.Entities;
 using Microsoft.AspNetCore.Authentication;
@@ -32,5 +33,26 @@ public class CookieSessionManager : ISessionManager
     public Task SignOutAsync()
     {
         return _accessor.HttpContext!.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    }
+
+    public async Task<int?> GetCurrentUserIdAsync()
+    {
+        var userPrincipal = _accessor.HttpContext?.User;
+
+        if (userPrincipal?.Identity?.IsAuthenticated != true)
+        {
+            return null;
+        }
+
+        var idClaim = userPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (idClaim == null)
+        {
+            return null;
+        }
+
+        bool parsed = int.TryParse(idClaim, out var id);
+
+        return parsed ? id : null;
     }
 }

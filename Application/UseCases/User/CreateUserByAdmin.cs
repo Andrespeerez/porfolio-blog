@@ -6,7 +6,7 @@ namespace Application.UseCases;
 
 public class CreateUserByAdmin
 {
-    IUserRepository _userRepository;
+    private readonly IUserRepository _userRepository;
 
     public CreateUserByAdmin(
         IUserRepository userRepository
