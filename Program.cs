@@ -37,6 +37,12 @@ builder.Services.AddScoped<ISessionManager, CookieSessionManager>();
 builder.Services.AddScoped<AuthenticateUser>();
 builder.Services.AddScoped<RegisterUser>();
 builder.Services.AddScoped<LogoutUser>();
+builder.Services.AddScoped<ListUsers>();
+builder.Services.AddScoped<GetMyProfile>();
+builder.Services.AddScoped<UpdateMyProfile>();
+builder.Services.AddScoped<GetUserById>();
+builder.Services.AddScoped<GetUserBySlug>();
+
 
 // 5) Seeder
 builder.Services.AddTransient<AdminUserSeeder>();
