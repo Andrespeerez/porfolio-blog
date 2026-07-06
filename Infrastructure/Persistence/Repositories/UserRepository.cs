@@ -18,15 +18,20 @@ public class UserRepository : IUserRepository
         return _db.Users.FirstOrDefaultAsync(x => x.Email == email);
     }
 
+    public Task<User?> GetByIdAsync(int id)
+    {
+        return _db.Users.FirstOrDefaultAsync(x => x.Id == id);
+    }
+
+    public Task<User?> GetBySlugAsync(string slug)
+    {
+        return _db.Users.FirstOrDefaultAsync(x => x.Slug == slug);
+    }
+
     public async Task AddAsync(User user)
     {
         await _db.Users.AddAsync(user);
         await _db.SaveChangesAsync();
-    }
-
-    public Task<User?> GetByIdAsync(int id)
-    {
-        return _db.Users.FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task UpdateAsync(User user)
