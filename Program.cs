@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Components;
 using System.Security.Claims;
+using Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
  
@@ -37,6 +38,7 @@ builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPasswordHasher, IdentityPasswordHasher>();
 builder.Services.AddScoped<ISessionManager, CookieSessionManager>();
+builder.Services.AddScoped<ISlugifier, Slugifier>();
  
 // 4) Caso de uso
 builder.Services.AddScoped<AuthenticateUser>();

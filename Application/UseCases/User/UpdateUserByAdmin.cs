@@ -29,6 +29,7 @@ public class UpdateUserByAdmin
         }
 
         user.ChangeEmail(userInput.Email);
+        user.SetAdmin(userInput.IsAdmin ?? user.IsAdmin);
         user.UpdateProfile(
             userInput.Slug,
             userInput.FullName,
