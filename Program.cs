@@ -49,6 +49,8 @@ builder.Services.AddScoped<GetUserById>();
 builder.Services.AddScoped<GetUserBySlug>();
 builder.Services.AddScoped<CreateUserByAdmin>();
 builder.Services.AddScoped<UpdateUserByAdmin>();
+builder.Services.AddScoped<ChangePassword>();
+
 
 
 // 5) Seeder

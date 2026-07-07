@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Application.Validators;
 
 namespace Application.DTOs.User;
 
 public record UpdateUserByAdminInput(
     [Required] int Id, 
     [Required, EmailAddress] string Email, 
-    [StringLength(100, MinimumLength = 8), RegularExpression(@"^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?\"":{}|<>ñÑ])\S+$")] string? Password,
+    [property: Password] string? Password,
     bool? IsAdmin,
     [RegularExpression("^[a-z0-9-]+$")] string? Slug, 
     [StringLength(120)] string? FullName, 
