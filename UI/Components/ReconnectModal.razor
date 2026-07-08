@@ -1,4 +1,4 @@
-﻿<script type="module" src="@Assets["Components/Layout/ReconnectModal.razor.js"]"></script>
+﻿<script type="module" src="@Assets["UI/Components/ReconnectModal.razor.js"]"></script>
 
 <dialog id="components-reconnect-modal" data-nosnippet>
     <div class="components-reconnect-container">
@@ -7,19 +7,19 @@
             <div></div>
         </div>
         <p class="components-reconnect-first-attempt-visible">
-            Rejoining the server...
+            Reconectando al servidor...
         </p>
         <p class="components-reconnect-repeated-attempt-visible">
-            Rejoin failed... trying again in <span id="components-seconds-to-next-attempt"></span> seconds.
+            Reconexión fallida ... vuelva a intentarlo en <span id="components-seconds-to-next-attempt"></span> segundos.
         </p>
         <p class="components-reconnect-failed-visible">
-            Failed to rejoin.<br />Please retry or reload the page.
+            Reconexión fallida.<br />POr favor, reintentalo o recarga la página.
         </p>
         <button id="components-reconnect-button" class="components-reconnect-failed-visible">
-            Retry
+            Reintentar
         </button>
         <p class="components-pause-visible">
-            The session has been paused by the server.
+            La sesión ha sido pausada por el servidor.
         </p>
         <p class="components-resume-failed-visible">
             Failed to resume the session.<br />Please retry or reload the page.
