@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Application.DTOs.User;
 using Application.Interfaces.Repositories;
 using Domain.Entities;
@@ -16,12 +17,23 @@ public class DeleteUser
     }
 
     public async Task<UserOutput?> ExecuteAsync(
-        int userId
+        int userId,
+        ClaimsPrincipal currentUser
     )
     {
-        User? user = await _userRepository.GetByIdAsync(userId);
+        if (currentUser is null || !currentUser.IsInRole("admin"))
+        {
+            return null;
+        }
 
+        User? user = await _userRepository.GetByIdAsync(userId);
         if (user is null || user.IsDeleted()) return null;
+
+        var selfIdClaim = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (int.TryParse(selfIdClaim, out int selfId) && selfId == userId)
+        {
+            return null;
+        }
 
         user.SoftDelete();
         await _userRepository.UpdateAsync(user);

@@ -22,13 +22,13 @@ public class ListUsers
     {
         var pagedUsers = await _userRepository.GetUsersAsync(listUsersQuery);
 
-        var items = pagedUsers.Items.Select(UserOutput.FromEntity).ToList();
+        var items = pagedUsers?.Items?.Select(UserOutput.FromEntity).ToList();
 
         return new PagedResult<UserOutput>(
             Items: items,
-            Page: pagedUsers.Page,
-            PageSize: pagedUsers.PageSize,
-            TotalCount: pagedUsers.TotalCount
+            Page: pagedUsers?.Page ?? 1,
+            PageSize: pagedUsers?.PageSize ?? 10,
+            TotalCount: pagedUsers?.TotalCount ?? 0
         );
     }
 }
