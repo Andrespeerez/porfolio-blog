@@ -1,0 +1,153 @@
+@page "/admin/usuarios"
+@rendermode InteractiveServer
+@attribute [Authorize(Policy = "AdminOnly")]
+
+@using Application.UseCases
+@using Application.DTOs.Common
+@using Application.DTOs.User
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+@inject ListUsers ListUsersUseCase
+@inject DeleteUser DeleteUserUseCase
+@inject NavigationManager NavigationManager
+
+
+<div class="w-100 d-flex justify-content-between flex-column flex-md-row">
+    <h1>Lista de usuarios</h1>
+
+    <div class="btns-menu">
+        <button class="btn btn-primary mb-3" @onclick="HandleCreate">
+            Nuevo Usuario
+        </button>
+    </div>
+</div>
+
+
+@if(isLoading)
+{
+    <p>Cargando usuarios... Por favor, espere.</p>
+}
+else if(users?.Items == null || !users.Items.Any())
+{
+    <p>No hay usuarios en la base de datos</p>
+}
+else
+{
+    <AdminUserList UserList="@users" OnEdit="HandleEdit" OnDelete="HandleDelete" />
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+            <div class="toast align-items-center border-0 alert bg-danger text-white show" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <strong>@errorMessage</strong>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                    aria-label="Cerrar"
+                    @onclick="() => errorMessage = null"></button>
+                </div>
+                
+            </div>
+        </div>
+    }
+}
+
+
+
+@code 
+{
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+    private ClaimsPrincipal? CurrentUser { get; set; } 
+
+
+    [SupplyParameterFromQuery(Name = "page")]
+    public int? Page { get; set; }
+    [SupplyParameterFromQuery(Name = "ps")]
+    public int? PageSize { get; set; }
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? Query { get; set; }
+
+
+    public PagedResult<UserOutput>? users { get; set; }
+    public bool isLoading = true;
+    public int TotalPages { get; set; } = 1;
+    public string? errorMessage { get; set; }
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+        if (AuthState is not null)
+        {
+            var state = await AuthState;
+            CurrentUser = state.User;
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+          await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        isLoading = true;
+
+        int effectivePage = (Page is not null && Page > 0) ? Page.Value : 1;
+        int effectivePageSize = (PageSize is not null && PageSize > 0) ? PageSize.Value : 10;
+
+        // busqueda en todos los campos
+        Dictionary<string, string>? filters = null;
+        if (!string.IsNullOrWhiteSpace(Query))
+        {
+            filters = new() { { "name", Query }, { "email", Query } };
+        }
+
+        ListUsersQuery query = ListUsersQuery.Create(
+            page: effectivePage,
+            pageSize: effectivePageSize,
+            filters: filters
+        );
+
+        users = await ListUsersUseCase.ExecuteAsync(query);
+
+        TotalPages = users?.TotalPages ?? 1;
+
+        isLoading = false; 
+    }
+
+    private async Task HandleCreate()
+    {
+        NavigationManager.NavigateTo("/admin/usuario/nuevo", false);
+    }
+
+
+    private async Task HandleEdit(int id)
+    {
+        NavigationManager.NavigateTo($"/admin/usuario/{id}", false);
+    }
+
+    private async Task HandleDelete(int id)
+    {   
+        errorMessage = null;
+
+        if (CurrentUser is null)
+        {
+            errorMessage = "No hay sesión activa.";
+            return;
+        }
+
+        var result = await DeleteUserUseCase.ExecuteAsync(id, CurrentUser);
+
+        if (result is not null)
+        {
+            await LoadUsers();
+        }
+        else
+        {
+            errorMessage = "No se ha podido borrar al usuario.";
+        }
+    }
+}

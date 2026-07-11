@@ -1,0 +1,45 @@
+@using Application.DTOs.Common
+@using Application.DTOs.User
+
+@if(UserList is not null && UserList.Items is not null)
+{
+<div class="table-responsive mx-3">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Email</th>
+                <th scope="col" class="d-none d-md-table-cell">Nombre Completo</th>
+                <th scope="col" class="w-auto text-nowrap">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(UserOutput user in UserList.Items)
+            {
+                <tr>
+                    <th>@user.Email</th>
+                    <td class="d-none d-md-table-cell">@user.FullName</td>
+                    <td class="w-auto text-nowrap">
+                        <button type="button" class="btn btn-secondary" @onclick="() => OnEdit.InvokeAsync(user.Id)" aria-label="editar"><span class="bi bi-pencil" aria-hidden="true"></span></button>
+                        <button type="button" class="btn btn-danger" @onclick="() => OnDelete.InvokeAsync(user.Id)"><span class="bi bi-trash3-fill" aria-hidden="true"></span></button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div> 
+}
+
+
+@code
+{
+    [Parameter]
+    public PagedResult<UserOutput>? UserList { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnDelete { get; set;}
+
+    [Parameter]
+    public EventCallback<int> OnEdit { get; set; }
+
+}
+
