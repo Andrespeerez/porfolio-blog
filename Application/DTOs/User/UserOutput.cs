@@ -4,9 +4,10 @@ namespace Application.DTOs.User;
 
 public record UserOutput(
     [Required] int Id, 
-    [Required, EmailAddress] string Email, 
+    [Required, EmailAddress] string Email,
+    bool IsAdmin,
     [RegularExpression("^[a-z0-9-]+$")] string? Slug, 
-    [StringLength(120)] string? FullName, 
+    [StringLength(120)] string? FullName,
     [Url, StringLength(500)] string? PhotoUrl, 
     [Url, StringLength(500)] string? ExternalWebsiteUrl, 
     [StringLength(80)] string? JobTitle, 
@@ -24,6 +25,7 @@ public record UserOutput(
         return new(
             user.Id,
             user.Email,
+            user.IsAdmin,
             user.Slug,
             user.FullName,
             user.PhotoUrl,
