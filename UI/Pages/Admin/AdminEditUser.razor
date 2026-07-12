@@ -1,0 +1,251 @@
+@page "/admin/usuario/{id:int}"
+@rendermode InteractiveServer
+@attribute [Authorize(Policy = "AdminOnly")]
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Application.UseCases;
+@using Application.DTOs.User;
+
+@inject GetUserById GetUserByIdUseCase;
+@inject UpdateUserByAdmin UpdateUserByAdminUseCase;
+@inject ISlugifier Slugifier;
+
+
+<div>
+    @if (IsLoading)
+    {
+        <p>Cargando datos del usuario...</p>
+    }
+    else if(!IsLoading && User is null)
+    {
+        <p>Usuario no encontrado</p>
+
+        <button onclick="history.back()" class="btn btn-secondary">Volver Atrás</button>
+    }
+    else 
+    {
+        <EditForm Model="FormModel" FormName="EditUserAdmin" OnSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="btns-menu">
+                <h1>Usuario</h1>
+                
+                <button type="submit" class="btn btn-primary mb-3">
+                    Guardar Usuario
+                </button>
+            </div>
+
+            <section class="row mb-5 g-4">
+                <div class="col-4">
+                    <div class="form-group">
+                        <label class="form-label">Email:
+                            <InputText @bind-Value="FormModel!.Email" class="form-control" />
+                        </label>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <label class="form-label">Contraseña:
+                        <InputText @bind-Value="FormModel!.Password" class="form-control" />
+                    </label>
+                </div>
+                <div class="col-4">
+                    <label class="form-label">Administrador?
+                        <InputCheckbox @bind-Value="FormModel!.IsAdmin"  />
+                    </label>
+                </div>
+            </section>
+            <hr>
+
+            <section class="row mb-5 g-4">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label class="form-label">Nombre Completo:
+                            <InputText @bind-Value="FormModel!.FullName" class="form-control" @bind-Value:after="SlugifyName" />
+                        </label>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Slug:
+                        <InputText @bind-Value="FormModel!.Slug" class="form-control bg-light" readonly  />
+                    </label>
+                </div>
+            </section>
+            <hr>
+
+            <section class="row mb-5 g-4">
+                <div class="col-4">
+                    <div class="form-group">
+                        <label class="form-label">Foto:
+                            <br />
+                            <br />
+                            @if (IsSafePhotoUrl(FormModel!.PhotoUrl))
+                            {
+                                <img src="@FormModel.PhotoUrl" width="150px" height="150px"
+                                class="rounded-circle" alr="Foto"
+                                />
+                            }
+                            <br />
+                            <br />
+                            <InputText @bind-Value="FormModel!.PhotoUrl" class="form-control" />
+                        </label>
+
+                        
+                    </div>
+                </div>
+                <div class="col-4">
+                    <label class="form-label">Web Externa:
+                        <InputText @bind-Value="FormModel!.ExternalWebsiteUrl" class="form-control" />
+                    </label>
+                </div>
+                <div class="col-4">
+                    <label class="form-label">Trabajo :
+                        <InputText @bind-Value="FormModel!.JobTitle" class="form-control" />
+                    </label>
+                </div>
+            </section>
+
+            <section class="row mb-5 g-4">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label class="form-label w-100">Bio:
+                            <InputTextArea @bind-Value="FormModel!.Bio" class="form-control w-100" />
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <section class="row mb-5 g-4">
+                <div class="col-4">
+                    <div class="form-group">
+                        <label class="form-label">Institución Educadora:
+                            <InputText @bind-Value="FormModel!.EducationalInstitution" class="form-control" />
+                        </label>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <label class="form-label">Temas:
+                        <TagsInput @bind-Value="FormModel!.Topics" class="form-control" />
+                    </label>
+                </div>
+                <div class="col-4">
+                    <label class="form-label">Redes sociales:
+                        <TagsInput @bind-Value="FormModel!.SocialNetworks" class="form-control" />
+                    </label>
+                </div>
+            </section>
+        </EditForm>
+    }    
+</div>
+
+@code 
+{
+    [Parameter]
+    public int Id { get; set; } = 0;
+
+    public bool IsLoading { get; set; } = true;    public UserOutput? User { get; set; }
+    public UpdateUserByAdminInput? UserInput { get; set; }
+    private EditFormModel FormModel = new();
+
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadUser();
+    }
+
+    private async Task LoadUser()
+    {
+        IsLoading = true;
+
+        User = await GetUserByIdUseCase.ExecuteAsync(Id);
+
+        if (User is not null)
+        {
+            FormModel.Id = User.Id;
+            FormModel.Email = User.Email;
+            FormModel.Password = null;
+            FormModel.IsAdmin = User.IsAdmin;
+            FormModel.Slug = User.Slug;
+            FormModel.FullName = User.FullName;
+            FormModel.PhotoUrl = User.PhotoUrl;
+            FormModel.JobTitle = User.JobTitle;
+            FormModel.ExternalWebsiteUrl = User.ExternalWebsiteUrl;
+            FormModel.Bio = User.Bio;
+            FormModel.EducationalInstitution = User.EducationalInstitution;
+            FormModel.Topics = User.Topics;
+            FormModel.SocialNetworks = User.SocialNetworks;
+        }   
+
+        IsLoading = false;
+    }
+
+    private void SlugifyName()
+    {
+        if (string.IsNullOrWhiteSpace(FormModel.FullName))
+        {
+            return;
+        }
+
+        FormModel.Slug = Slugifier.Slugify(FormModel.FullName);
+    }
+
+
+    private async Task HandleSubmit(EditContext editContext)
+    {
+        if (editContext.Validate())
+        {
+            await HandleSave();
+        }
+    }
+
+    private async Task HandleSave()
+    {
+        await UpdateUserByAdminUseCase.ExecuteAsync(FormModel.ToUserInput());
+    }  
+
+    public class EditFormModel
+    {
+        public int Id { get; set; }
+        public string Email { get; set; } = "";
+        public string? Password { get; set; }
+        public bool IsAdmin { get; set; } = false;
+        public string? Slug { get; set; }
+        public string? FullName { get; set; }
+        public string? PhotoUrl { get; set; }
+        public string? ExternalWebsiteUrl { get; set; }
+        public string? JobTitle { get; set; }
+        public string? Bio { get; set; }
+        public string? EducationalInstitution { get; set; }
+        public List<string>? Topics { get; set; }
+        public List<string>? SocialNetworks { get; set; }
+
+        public UpdateUserByAdminInput ToUserInput()
+        {
+            return new UpdateUserByAdminInput(
+                Id,
+                Email,
+                Password,
+                IsAdmin,
+                Slug,
+                FullName,
+                PhotoUrl,
+                ExternalWebsiteUrl,
+                JobTitle,
+                Bio,
+                EducationalInstitution,
+                Topics,
+                SocialNetworks
+            );
+        }
+    }
+
+
+
+    private static bool IsSafePhotoUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return false;
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return false;
+        return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
+    }
+}

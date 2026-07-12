@@ -1,6 +1,22 @@
 ﻿<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        @if (IsAdminRoute(routeData))
+        {
+            <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.AdminLayout)" />
+        }
+        else
+        {
+            <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        }
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
 </Router>
+
+@code 
+{
+    private bool IsAdminRoute(RouteData routeData)
+    {
+        var ns = routeData.PageType?.FullName ?? string.Empty;
+        return ns.Contains(".Pages.Admin.");
+    }
+}

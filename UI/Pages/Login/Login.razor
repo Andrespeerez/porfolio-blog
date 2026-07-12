@@ -1,8 +1,9 @@
 @page "/login"
+@layout EmptyLayout
 
 @using System.ComponentModel.DataAnnotations
 @using Application.UseCases
-@using Application.DTOs
+@using Application.DTOs.Auth
 
 @inject NavigationManager NavigationManager
 @inject AuthenticateUser AuthenticateUserUseCase

@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Components;
+using System.Security.Claims;
+using Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
  
@@ -25,6 +27,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         o.LoginPath = "/login";
     });
+builder.Services.AddAuthorization(o =>
+{
+    o.AddPolicy("AdminOnly", p => p.RequireRole("admin"));
+});
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
  
@@ -32,11 +38,23 @@ builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPasswordHasher, IdentityPasswordHasher>();
 builder.Services.AddScoped<ISessionManager, CookieSessionManager>();
+builder.Services.AddScoped<ISlugifier, Slugifier>();
  
 // 4) Caso de uso
 builder.Services.AddScoped<AuthenticateUser>();
 builder.Services.AddScoped<RegisterUser>();
 builder.Services.AddScoped<LogoutUser>();
+builder.Services.AddScoped<ListUsers>();
+builder.Services.AddScoped<GetMyProfile>();
+builder.Services.AddScoped<UpdateMyProfile>();
+builder.Services.AddScoped<GetUserById>();
+builder.Services.AddScoped<GetUserBySlug>();
+builder.Services.AddScoped<CreateUserByAdmin>();
+builder.Services.AddScoped<UpdateUserByAdmin>();
+builder.Services.AddScoped<ChangePassword>();
+builder.Services.AddScoped<DeleteUser>();
+builder.Services.AddScoped<RestoreUser>();
+
 
 // 5) Seeder
 builder.Services.AddTransient<AdminUserSeeder>();

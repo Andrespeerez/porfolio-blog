@@ -3,7 +3,6 @@ using Application.Interfaces.Services;
 using Domain.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
 
 namespace Infrastructure.Auth;
 
@@ -18,11 +17,14 @@ public class CookieSessionManager : ISessionManager
 
     public Task SignInAsync(User user)
     {
-        var claims = new []
+        var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email),
         };
+
+        if (user.IsAdmin)
+            claims.Add(new Claim(ClaimTypes.Role, "admin"));
 
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);

@@ -1,7 +1,7 @@
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Domain.Entities;
-using Application.DTOs;
+using Application.DTOs.Auth;
 
 namespace Application.UseCases;
 
@@ -26,6 +26,9 @@ public class AuthenticateUser
         User? user = await _userRepository.GetByEmailAsync(email);
 
         if (user == null)
+            return AuthResult.Fail("Credenciales incorrectas.");
+
+        if (user.IsDeleted())
             return AuthResult.Fail("Credenciales incorrectas.");
 
         if (!_passwordHasher.Verify(user.PasswordHash, password))

@@ -1,0 +1,50 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Andrés Pérez | Blog</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/admin" Match="NavLinkMatch.All">
+                <span class="bi bi-house-fill" aria-hidden="true"></span> Home
+            </NavLink>
+            <AuthorizeView>
+                <Authorized>
+                    @if (context.User.IsInRole("admin"))
+                    {
+                        <NavLink class="nav-link" href="/admin/usuarios" Match="NavLinkMatch.All">
+                            <span class="bi bi-people" aria-hidden="true"></span> Usuarios
+                        </NavLink>
+                    }
+                </Authorized>
+                <NotAuthorized>
+
+                </NotAuthorized>
+            </AuthorizeView>
+            
+            <NavLink class="nav-link" href="/admin/articulos" Match="NavLinkMatch.All">
+                <span class="bi bi-postcard-fill" aria-hidden="true"></span> Artículos
+            </NavLink>
+            <AuthorizeView>
+                <Authorized>
+                    @if (context.User.IsInRole("admin"))
+                    {
+                        <NavLink class="nav-link" href="/admin/categorias" Match="NavLinkMatch.All">
+                            <span class="bi bi-tag-fill" aria-hidden="true"></span> Categorias
+                        </NavLink>
+                    }
+                </Authorized>
+                <NotAuthorized>
+                    
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </nav>
+</div>
+
