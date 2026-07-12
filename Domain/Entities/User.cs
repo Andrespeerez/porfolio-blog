@@ -30,10 +30,11 @@ public class User
 
     public void UpdateProfile(string? slug, string? fullName, string? photoUrl, string? externalWebsiteUrl, string? jobTitle, string? bio, string? educationalInstitution, List<string>? topics, List<string>? socialNetworks)
     {
-        if (this.Slug is null && slug is not null)
+        if (!string.IsNullOrWhiteSpace(slug))
         {
             this.Slug = slug;
         }
+
         this.FullName = fullName ?? this.FullName;
         this.PhotoUrl = photoUrl ?? this.PhotoUrl;
         this.ExternalWebsiteUrl = externalWebsiteUrl ?? this.ExternalWebsiteUrl;

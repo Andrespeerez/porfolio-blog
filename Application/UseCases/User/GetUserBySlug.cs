@@ -19,6 +19,11 @@ public class GetUserBySlug
         string slug
     )
     {
+        if (string.IsNullOrWhiteSpace(slug))
+        {
+            return null;
+        }
+
         User? user = await _userRepository.GetBySlugAsync(slug);
 
         if (user is null || user.IsDeleted())

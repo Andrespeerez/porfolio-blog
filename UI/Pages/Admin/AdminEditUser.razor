@@ -27,7 +27,7 @@
     }
     else 
     {
-        <EditForm Model="FormModel" FormName="EditUserAdmin" OnValidSubmit="HandleSave">
+        <EditForm Model="FormModel" FormName="EditUserAdmin" OnSubmit="HandleSubmit">
             <DataAnnotationsValidator />
             <ValidationSummary />
             <div class="btns-menu">
@@ -66,7 +66,7 @@
                     </div>
                     <div class="col-6">
                         <label class="form-label">Slug:
-                            <InputText @bind-Value="FormModel!.Slug" class="form-control" disabled />
+                            <InputText @bind-Value="FormModel!.Slug" class="form-control bg-light" readonly  />
                         </label>
                     </div>
                 </section>
@@ -124,12 +124,12 @@
                     </div>
                     <div class="col-4">
                         <label class="form-label">Temas:
-                            <InputSelect @bind-Value="FormModel!.Topics" class="form-control" />
+                            <TagsInput @bind-Value="FormModel!.Topics" class="form-control" />
                         </label>
                     </div>
                     <div class="col-4">
                         <label class="form-label">Redes sociales:
-                            <InputSelect @bind-Value="FormModel!.SocialNetworks" class="form-control" />
+                            <TagsInput @bind-Value="FormModel!.SocialNetworks" class="form-control" />
                         </label>
                     </div>
                 </section>
@@ -144,10 +144,7 @@
     [Parameter]
     public int Id { get; set; } = 0;
 
-    public bool IsLoading { get; set; } = true;
-
-
-    public UserOutput? User { get; set; }
+    public bool IsLoading { get; set; } = true;    public UserOutput? User { get; set; }
     public UpdateUserByAdminInput? UserInput { get; set; }
     private EditFormModel FormModel = new();
 
@@ -179,7 +176,7 @@
             FormModel.EducationalInstitution = User.EducationalInstitution;
             FormModel.Topics = User.Topics;
             FormModel.SocialNetworks = User.SocialNetworks;
-        }
+        }   
 
         IsLoading = false;
     }
@@ -194,6 +191,14 @@
         FormModel.Slug = Slugifier.Slugify(FormModel.FullName);
     }
 
+
+    private async Task HandleSubmit(EditContext editContext)
+    {
+        if (editContext.Validate())
+        {
+            await HandleSave();
+        }
+    }
 
     private async Task HandleSave()
     {

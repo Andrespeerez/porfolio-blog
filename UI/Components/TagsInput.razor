@@ -1,0 +1,71 @@
+@inherits InputBase<List<string>?>
+
+@using System.Diagnostics.CodeAnalysis;<div class="d-flex flex-column gap-2">
+    <div class="d-flex flex-wrap gap-2">
+        @foreach(var currentTag in CurrentValue ?? new())
+        {
+            <span class="tag-pill badge rounded-pill bg-primary text-white">
+                <span class="tag-pill-text">@currentTag</span>
+                <button type="button" class="tag-pill-remove" aria-label="Eliminar tag" @onclick="() => RemoveTag(currentTag)">×</button>
+            </span>
+        }
+    </div>
+    <input type="text" class="form-control" aria-label="Añadir tag" placeholder="Añadir tag..." @bind="currentInput" @bind:event="oninput" @onkeydown="HandleKeyDown" />
+</div>
+
+@code
+{
+    private string currentInput = "";
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "," || e.Key == "Enter")
+        {
+            AddTag(currentInput);
+        }
+
+        if (e.Key == "Backspace" && string.IsNullOrWhiteSpace(currentInput))
+        {
+            if (CurrentValue is { Count: > 0 } list)
+                RemoveTag(list[^1]);
+        }
+    }
+
+    private void AddTag(string? raw)
+    {
+        var tag = raw?.Trim() ?? "";
+
+        if (string.IsNullOrWhiteSpace(tag))
+            return;
+        
+        if ((CurrentValue ?? new()).Any(x => x.Equals(tag, StringComparison.OrdinalIgnoreCase)))
+            return;
+
+        var newList = (CurrentValue ?? new List<string>()).ToList();
+        newList.Add(tag);
+
+        CurrentValue = newList;
+        currentInput = "";
+    }
+
+    private void RemoveTag(string tag)
+    {
+        var newList = (CurrentValue ?? new List<string>())
+            .Where(x => !x.Equals(tag, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        CurrentValue = newList;
+    }
+
+    protected override bool TryParseValueFromString(
+        string? value,
+        out List<string>? result,
+        [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        validationErrorMessage = null;
+        result = value?
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+        return true;
+    }
+}
