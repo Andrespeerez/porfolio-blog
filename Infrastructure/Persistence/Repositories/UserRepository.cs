@@ -18,7 +18,7 @@ public class UserRepository : IUserRepository
 
     public async Task<PagedResult<User>> GetUsersAsync(ListUsersQuery options)
     {
-        var query = _db.Users.AsNoTracking();
+        var query = _db.Users.AsNoTracking().Where(x => x.DeletedAt == null);
 
         if (options.Filters is not null && options.Filters.Count > 0)
         {
@@ -46,8 +46,7 @@ public class UserRepository : IUserRepository
                 }
             }
 
-            var finalPredicate = pred.And(x => x.DeletedAt == null);
-            query = query.Where(finalPredicate);
+            query = query.Where(pred);
         }
 
         int totalCount = await query.CountAsync();

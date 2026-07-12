@@ -29,7 +29,7 @@ public class AuthenticateUser
             return AuthResult.Fail("Credenciales incorrectas.");
 
         if (user.IsDeleted())
-            return AuthResult.Fail("Usuario eliminado.");
+            return AuthResult.Fail("Credenciales incorrectas.");
 
         if (!_passwordHasher.Verify(user.PasswordHash, password))
             return AuthResult.Fail("Credenciales incorrectas.");
