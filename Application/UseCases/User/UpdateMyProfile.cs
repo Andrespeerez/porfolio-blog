@@ -17,11 +17,12 @@ public class UpdateMyProfile
     }
 
     public async Task<UserOutput?> ExecuteAsync(
-        int currentUserId,
+        int id,
         UpdateMyProfileInput updateUser
     )
-    {        
-        User? user = await _userRepository.GetByIdAsync(currentUserId);
+    {       
+        User? user = await _userRepository.GetByIdAsync(id);
+            
         if (user is null || user.IsDeleted())
         {
             return null;

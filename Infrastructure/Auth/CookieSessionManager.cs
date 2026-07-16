@@ -9,10 +9,15 @@ namespace Infrastructure.Auth;
 public class CookieSessionManager : ISessionManager
 {
     private readonly IHttpContextAccessor _accessor;
+    private readonly IUserContext _userContext;
     
-    public CookieSessionManager(IHttpContextAccessor accessor)
+    public CookieSessionManager(
+        IHttpContextAccessor accessor,
+        IUserContext userContext
+        )
     {
         _accessor = accessor;
+        _userContext = userContext;
     }
 
     public Task SignInAsync(User user)

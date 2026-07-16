@@ -18,22 +18,16 @@ public class DeleteUser
 
     public async Task<UserOutput?> ExecuteAsync(
         int userId,
-        ClaimsPrincipal currentUser
+        int currentId
     )
     {
-        if (currentUser is null || !currentUser.IsInRole("admin"))
+        if (userId == currentId)
         {
             return null;
         }
 
         User? user = await _userRepository.GetByIdAsync(userId);
         if (user is null || user.IsDeleted()) return null;
-
-        var selfIdClaim = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (int.TryParse(selfIdClaim, out int selfId) && selfId == userId)
-        {
-            return null;
-        }
 
         user.SoftDelete();
         await _userRepository.UpdateAsync(user);

@@ -16,12 +16,10 @@ public class GetMyProfile
         _userRepository = userRepository;
     }
 
-    public async Task<UserOutput?> ExecuteAsync(
-        int currentUserId
-    )
+    public async Task<UserOutput?> ExecuteAsync(int id)
     {
-        User? myUser = await _userRepository.GetByIdAsync(currentUserId);
-
+        User? myUser = await _userRepository.GetByIdAsync(id);
+            
         if (myUser is null || myUser.IsDeleted())
         {
             return null;
