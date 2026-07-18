@@ -43,6 +43,12 @@ main {
     border-radius: 50%;
 }
 
+.link-underline-black:hover
+{
+    text-decoration: underline;
+    
+}
+
 @media (max-width: 640.98px) {
     .top-row {
         justify-content: space-between;
