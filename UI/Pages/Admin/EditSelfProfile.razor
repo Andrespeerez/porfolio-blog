@@ -1,0 +1,355 @@
+@page "/admin/me/"
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Application.UseCases;
+@using Application.DTOs.User;
+@using System.ComponentModel.DataAnnotations;
+@using Application.Validators;
+@using System.Security.Claims;
+
+@inject AuthenticationStateProvider Auth;
+@inject GetMyProfile GetMyProfileUseCase;
+@inject UpdateMyProfile UpdateMyProfileUseCase;
+@inject ChangePassword ChangePasswordUseCase;
+@inject ISlugifier Slugifier;
+@inject IJSRuntime JSRuntime;
+
+<div>
+    @if (IsLoading)
+    {
+        <p>Cargando tus datos personales...</p>
+    }
+    else if(!IsLoading && UserOutput is null)
+    {
+        <p>Usuario no encontrado</p>
+
+        <button onclick="history.back()" class="btn btn-secondary">Volver Atrás</button>
+    }
+    else 
+    {
+        <div class="btns-menu d-flex justify-content-between w-full">
+                <h1> 
+                    Tu perfil
+                </h1>
+
+                <p>Email: <span>@UserOutput!.Email</span></p>                
+        </div>
+        <hr class="mb-4">
+
+        <div class="row">
+            <EditForm Model="FormChangePassword" FormName="ChangePassword" OnSubmit="HandleChangePassword">
+                <h2>Cambiar Contraseña:</h2>
+
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="d-flex flex-column align-items-center gap-3">
+                    <div>
+                        <label class="form-label"> Contraseña Actual:
+                            <InputPassword @bind-Value="FormChangePassword!.OldPassword" class="form-control" />
+                            
+                        </label>
+                    </div>
+                    <div>
+                        <label class="form-label"> Contraseña Nueva:
+                            <InputPassword @bind-Value="FormChangePassword!.NewPassword" class="form-control" />
+                        </label>
+                    </div>
+                    <div>
+                        <label class="form-label"> Repite Contraseña Nueva:
+                            <InputPassword @bind-Value="FormChangePassword!.RepeatNewPassword" class="form-control" />
+                        </label>
+                    </div>
+
+                    @if (ChangePasswordError is not null)
+                    {
+                        <div class="alert alert-danger">@ChangePasswordError</div>
+                    }
+                    
+                    <button type="submit" class="btn btn-primary mb-3">Cambiar contraseña</button>
+                </div>
+            </EditForm>
+        </div>
+        <hr class="mb-5">
+
+        <div>
+            <EditForm Model="FormUpdateUser" FormName="UpdateUser" OnSubmit="HandleUpdateUser">
+                <h2>Actualizar Usuario:</h2>
+
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <section class="row mb-5 g-4">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label class="form-label">Nombre Completo:
+                                <InputText @bind-Value="FormUpdateUser!.FullName" class="form-control" @bind-Value:after="SlugifyName" />
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Slug:
+                            <InputText @bind-Value="FormUpdateUser!.Slug" class="form-control bg-light" readonly  />
+                        </label>
+                    </div>
+                </section>
+                <hr>
+
+                <section class="row mb-5 g-4">
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label class="form-label">Foto:
+                                <br />
+                                <br />
+                                @if (IsSafePhotoUrl(FormUpdateUser!.PhotoUrl))
+                                {
+                                    <img src="@FormUpdateUser.PhotoUrl" width="150px" height="150px"
+                                    class="rounded-circle" alr="Foto"
+                                    />
+                                }
+                                <br />
+                                <br />
+                                <InputText @bind-Value="FormUpdateUser!.PhotoUrl" class="form-control" />
+                            </label>
+
+                            
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label">Web Externa:
+                            <InputText @bind-Value="FormUpdateUser!.ExternalWebsiteUrl" class="form-control" />
+                        </label>
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label">Trabajo :
+                            <InputText @bind-Value="FormUpdateUser!.JobTitle" class="form-control" />
+                        </label>
+                    </div>
+                </section>
+
+                <section class="row mb-5 g-4">
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label class="form-label w-100">Bio:
+                                <InputTextArea @bind-Value="FormUpdateUser!.Bio" class="form-control w-100" />
+                            </label>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="row mb-5 g-4">
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label class="form-label">Institución Educadora:
+                                <InputText @bind-Value="FormUpdateUser!.EducationalInstitution" class="form-control" />
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label">Temas:
+                            <TagsInput @bind-Value="FormUpdateUser!.Topics" class="form-control" />
+                        </label>
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label">Redes sociales:
+                            <TagsInput @bind-Value="FormUpdateUser!.SocialNetworks" class="form-control" />
+                        </label>
+                    </div>
+                </section>
+
+                @if (UpdateUserError is not null)
+                {
+                    <div class="alert alert-danger">@UpdateUserError</div>
+                }
+
+                <button type="submit" class="btn btn-primary mb-3">Actualizar perfil</button>
+            </EditForm>
+        </div>
+
+
+
+        
+    }
+</div>
+
+@code
+{
+    public bool IsLoading { get; set; } = true;
+    public UserOutput? UserOutput;
+
+    private EditUpdateUser FormUpdateUser = new();
+    private EditChangePassword FormChangePassword = new();
+
+
+    private string? ChangePasswordError;
+    private string? UpdateUserError;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadUser();
+    }
+
+    private async Task LoadUser()
+    {
+        IsLoading = true;
+
+        AuthenticationState auth = await Auth.GetAuthenticationStateAsync();
+
+        int userId = int.Parse(auth.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        UserOutput = await GetMyProfileUseCase.ExecuteAsync(userId);
+
+        if (UserOutput is not null)
+        {
+            FormUpdateUser.Slug = UserOutput.Slug;
+            FormUpdateUser.FullName = UserOutput.FullName;
+            FormUpdateUser.PhotoUrl = UserOutput.PhotoUrl;
+            FormUpdateUser.JobTitle = UserOutput.JobTitle;
+            FormUpdateUser.ExternalWebsiteUrl = UserOutput.ExternalWebsiteUrl;
+            FormUpdateUser.Bio = UserOutput.Bio;
+            FormUpdateUser.EducationalInstitution = UserOutput.EducationalInstitution;
+            FormUpdateUser.Topics = UserOutput.Topics;
+            FormUpdateUser.SocialNetworks = UserOutput.SocialNetworks;
+        }   
+
+        IsLoading = false;
+    }
+
+
+    private async Task HandleChangePassword(EditContext editContext)
+    {
+        ChangePasswordError = null;
+
+        if (editContext.Validate())
+        {
+            AuthenticationState auth = await Auth.GetAuthenticationStateAsync();
+
+            int userId = int.Parse(auth.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var result = await ChangePasswordUseCase.ExecuteAsync(
+                userId,
+                FormChangePassword.ToChangePasswordInput()
+            );
+
+            if (result is null)
+            {
+                ChangePasswordError = "La contraseña actual no es correcta o las nuevas no coinciden.";
+                return;
+            }
+
+            FormChangePassword = new();
+            ChangePasswordError = null;
+        }
+    }
+
+    private async Task HandleUpdateUser(EditContext editContext)
+    {
+        UpdateUserError = null;
+
+        if (editContext.Validate())
+        {
+            AuthenticationState auth = await Auth.GetAuthenticationStateAsync();
+
+            int userId = int.Parse(auth.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var result = await UpdateMyProfileUseCase.ExecuteAsync(
+                userId,
+                FormUpdateUser.ToUpdateMyProfileInput()
+            );
+
+            if (result is null)
+            {
+                UpdateUserError = "Error al guardar los campos.";
+                return;
+            }
+
+            await LoadUser();
+            UpdateUserError = null;
+        }
+    }
+
+    private async Task GoBack()
+    {
+        await JSRuntime.InvokeVoidAsync("history.back()");
+    }
+
+    private void SlugifyName()
+    {
+        if (string.IsNullOrWhiteSpace(FormUpdateUser.FullName))
+        {
+            return;
+        }
+
+        FormUpdateUser.Slug = Slugifier.Slugify(FormUpdateUser.FullName);
+    }
+
+    private static bool IsSafePhotoUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return false;
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return false;
+        return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
+    }
+
+    public class EditChangePassword
+    {
+        [property: Required, Password]
+        public string OldPassword { get; set; } = String.Empty;
+
+        [property: Required, Password]
+        public string NewPassword { get; set; } = String.Empty;
+
+        [property: Compare(nameof(ChangePasswordInput.NewPassword), ErrorMessage = "Las contraseñas nuevas no coinciden.")] 
+        public string RepeatNewPassword { get; set; } = String.Empty;
+
+        public ChangePasswordInput ToChangePasswordInput()
+        {
+            ChangePasswordInput cpi = new(
+                OldPassword: OldPassword,
+                NewPassword: NewPassword,
+                RepeatNewPassword: RepeatNewPassword
+            );
+
+            return cpi;
+        }
+    }
+
+    public class EditUpdateUser
+    {
+        [RegularExpression("^[a-z0-9-]+$")]
+        public string? Slug { get; set; }
+        [StringLength(120)]
+        public string? FullName { get; set; }
+        [Url, StringLength(500)]
+        public string? PhotoUrl { get; set; }
+        [Url, StringLength(500)]
+        public string? ExternalWebsiteUrl { get; set; }
+        [StringLength(80)]
+        public string? JobTitle { get; set; }
+        [StringLength(1000)]
+        public string? Bio { get; set; }
+        [StringLength(180)]
+        public string? EducationalInstitution { get; set; }
+        public List<string>? Topics { get; set; }
+        public List<string>? SocialNetworks { get; set; }
+
+        public UpdateMyProfileInput ToUpdateMyProfileInput()
+        {
+            return new UpdateMyProfileInput(
+                Slug: Slug,
+                FullName: FullName,
+                PhotoUrl: PhotoUrl,
+                ExternalWebsiteUrl: ExternalWebsiteUrl,
+                JobTitle: JobTitle,
+                Bio: Bio,
+                EducationalInstitution: EducationalInstitution,
+                Topics: Topics,
+                SocialNetworks: SocialNetworks
+            );
+        }
+    }
+    
+     
+}

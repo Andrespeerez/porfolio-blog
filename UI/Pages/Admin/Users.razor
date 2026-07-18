@@ -9,6 +9,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
 
+@inject AuthenticationStateProvider Auth;
 @inject ListUsers ListUsersUseCase
 @inject DeleteUser DeleteUserUseCase
 @inject NavigationManager NavigationManager
@@ -58,11 +59,6 @@ else
 
 @code 
 {
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthState { get; set; }
-    private ClaimsPrincipal? CurrentUser { get; set; } 
-
-
     [SupplyParameterFromQuery(Name = "page")]
     public int? Page { get; set; }
     [SupplyParameterFromQuery(Name = "ps")]
@@ -75,16 +71,6 @@ else
     public bool isLoading = true;
     public int TotalPages { get; set; } = 1;
     public string? errorMessage { get; set; }
-
-    public override async Task SetParametersAsync(ParameterView parameters)
-    {
-        await base.SetParametersAsync(parameters);
-        if (AuthState is not null)
-        {
-            var state = await AuthState;
-            CurrentUser = state.User;
-        }
-    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -133,13 +119,19 @@ else
     {   
         errorMessage = null;
 
-        if (CurrentUser is null)
+        AuthenticationState auth = await Auth.GetAuthenticationStateAsync();
+        int currentUserId = int.Parse(auth.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        if (currentUserId == id)
         {
-            errorMessage = "No hay sesión activa.";
+            errorMessage = "No puedes eliminar tu propio usuario.";
             return;
         }
 
-        var result = await DeleteUserUseCase.ExecuteAsync(id, CurrentUser);
+        var result = await DeleteUserUseCase.ExecuteAsync(
+            id,
+            currentUserId
+        );
 
         if (result is not null)
         {

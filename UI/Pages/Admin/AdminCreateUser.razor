@@ -7,20 +7,28 @@
 @using Application.UseCases;
 @using Application.DTOs.User;
 
+
 @inject CreateUserByAdmin CreateUserByAdminUseCase;
 @inject ISlugifier Slugifier;
+@inject IJSRuntime JSRuntime;
 
 <div>
     <EditForm Model="FormModel" FormName="CreateUserAdmin" OnSubmit="HandleSubmit">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-        <div class="btns-menu">
-            <h1>Nuevo Usuario</h1>
+        <button type="button" class="btn mb-2" @onclick="() => GoBack()">Volver</button>
+        
+        <div class="btns-menu d-flex justify-content-between w-full">
+            <h1> 
+                Nuevo Usuario
+            </h1>
             
             <button type="submit" class="btn btn-primary mb-3">
                 Guardar Usuario
             </button>
         </div>
+        <hr class="mb-4">
+
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
         <section class="row mb-5 g-4">
             <div class="col-4">
@@ -161,7 +169,12 @@
     private async Task HandleSave()
     {
         await CreateUserByAdminUseCase.ExecuteAsync(FormModel.ToUserInput());
-    }  
+    } 
+
+    private async Task GoBack()
+    {
+        await JSRuntime.InvokeVoidAsync("history.back()");
+    }
 
     public class EditFormModel
     {

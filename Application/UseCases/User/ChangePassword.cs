@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Application.DTOs.User;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
@@ -21,11 +20,11 @@ public class ChangePassword
     }
 
     public async Task<UserOutput?> ExecuteAsync(
-        int currentUserId,
+        int userId,
         ChangePasswordInput changePasswordInput
     )
     {
-        User? user = await _userRepository.GetByIdAsync(currentUserId);
+        User? user = await _userRepository.GetByIdAsync(userId);
 
         if( changePasswordInput.NewPassword == changePasswordInput.RepeatNewPassword &&
             user is not null &&

@@ -7,9 +7,11 @@
 @using Application.UseCases;
 @using Application.DTOs.User;
 
+@inject AuthenticationStateProvider Auth;
 @inject GetUserById GetUserByIdUseCase;
 @inject UpdateUserByAdmin UpdateUserByAdminUseCase;
 @inject ISlugifier Slugifier;
+@inject IJSRuntime JSRuntime;
 
 
 <div>
@@ -21,20 +23,33 @@
     {
         <p>Usuario no encontrado</p>
 
-        <button onclick="history.back()" class="btn btn-secondary">Volver Atrás</button>
+        <button type="button" class="btn mb-2" @onclick="() => GoBack()">Volver</button>
     }
     else 
     {
         <EditForm Model="FormModel" FormName="EditUserAdmin" OnSubmit="HandleSubmit">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-            <div class="btns-menu">
-                <h1>Usuario</h1>
+            <button type="button" class="btn mb-2" @onclick="() => GoBack()">Volver</button>
+
+            <div class="btns-menu d-flex justify-content-between w-full">
+                <h1> 
+                    @if(FormModel!.FullName is not null)
+                    {
+                        <span>@FormModel.FullName</span>
+                    }
+                    else
+                    {
+                        <span>Usuario</span>
+                    }
+                </h1>
                 
                 <button type="submit" class="btn btn-primary mb-3">
                     Guardar Usuario
                 </button>
             </div>
+            <hr class="mb-4">
+
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
             <section class="row mb-5 g-4">
                 <div class="col-4">
@@ -46,7 +61,7 @@
                 </div>
                 <div class="col-4">
                     <label class="form-label">Contraseña:
-                        <InputText @bind-Value="FormModel!.Password" class="form-control" />
+                        <InputPassword @bind-Value="FormModel!.Password" class="form-control" />
                     </label>
                 </div>
                 <div class="col-4">
@@ -143,11 +158,10 @@
     [Parameter]
     public int Id { get; set; } = 0;
 
-    public bool IsLoading { get; set; } = true;    public UserOutput? User { get; set; }
+    public bool IsLoading { get; set; } = true;    
+    public UserOutput? User { get; set; }
     public UpdateUserByAdminInput? UserInput { get; set; }
     private EditFormModel FormModel = new();
-
-
 
     protected override async Task OnParametersSetAsync()
     {
@@ -188,6 +202,11 @@
         }
 
         FormModel.Slug = Slugifier.Slugify(FormModel.FullName);
+    }
+
+    private async Task GoBack()
+    {
+        await JSRuntime.InvokeVoidAsync("history.back");
     }
 
 

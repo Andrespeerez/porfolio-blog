@@ -1,5 +1,10 @@
 ﻿@inherits LayoutComponentBase
 @using porfolio_blog.UI.Components
+@using Application.DTOs.User
+@using Application.UseCases
+
+@inject IUserContext UserContext;
+@inject GetUserById GetUserByIdUseCase;
 
 <div class="page">
     <div class="sidebar">
@@ -9,9 +14,38 @@
     <main>
         <div class="top-row px-4">
             <div class="float-right mr-4">
-                <NavLink href="/admin/me/">
-                    <span class="bi bi-person fs-3"></span>
-                </NavLink>
+                @if (user is null)
+                {
+                    <button type="button" class="dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="bi bi-person fs-3"></span>
+                    </button>
+                    <div class="dropdown-menu">
+                        <NavLink href="/admin/me/">
+                            Perfil
+                        </NavLink>
+                        <form action="/admin/me/" method="post">
+                            <button type="submit">Cerrar sesión</button>
+                        </form>
+                    </div>
+                }
+                else 
+                {
+                    <button type="button" class="dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border: 0">
+                        <img src="@user.PhotoUrl" alt="Foto"
+                        class="avatar"
+                        >
+                    </button>
+                    <div class="dropdown-menu fs-6 black">
+                        <NavLink href="/admin/me/" class="dropdown-item m-0">
+                            Perfil
+                        </NavLink>
+                        <form name="logout" action="/api/auth/logout" method="post" class="m-0 p-0">
+                            <AntiforgeryToken />
+                            <button type="submit" class="dropdown-item text-start w-100 bg-transparent border-0 link-underline-black">Cerrar sesión</button>
+                        </form>
+                    </div>
+                }
+                
             </div>
             
         </div>
@@ -27,3 +61,15 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code
+{
+    public UserOutput? user {get; set;}
+
+    protected async override Task OnParametersSetAsync()
+    {
+        int userId = UserContext.UserId!.Value;
+
+        user = await GetUserByIdUseCase.ExecuteAsync(userId);
+    }
+}
