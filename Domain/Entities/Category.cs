@@ -8,6 +8,7 @@ public class Category
     public string Name { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
     public string? Description { get; set; }
+    public bool IsVisible = true;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
@@ -15,8 +16,7 @@ public class Category
         int id,
         string name,
         string slug,
-        DateTime createdAt,
-        DateTime updatedAt,
+        bool isVisible,
         string? description = null
     )
     {
@@ -25,20 +25,28 @@ public class Category
             Name = name,
             Slug = slug,
             Description = description,
-            CreatedAt = createdAt,
-            UpdatedAt = updatedAt
+            IsVisible = isVisible,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
     }
 
     public void UpdateCategory(
         string name,
         string slug,
-        string description
+        string description,
+        bool isVisible
     )
     {
         this.Name = name;
         this.Slug = slug;
         this.Description = description;
+        this.IsVisible = isVisible;
         this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void ToggleVisibility()
+    {
+        this.IsVisible = this.IsVisible ? false : true;
     }
 }
