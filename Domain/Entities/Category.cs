@@ -13,7 +13,6 @@ public class Category
     public DateTime UpdatedAt { get; set; }
 
     public static Category Create(
-        int id,
         string name,
         string slug,
         bool isVisible,
@@ -21,7 +20,6 @@ public class Category
     )
     {
         return new Category() {
-            Id = id,
             Name = name,
             Slug = slug,
             Description = description,
