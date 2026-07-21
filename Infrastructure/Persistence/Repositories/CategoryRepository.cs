@@ -1,4 +1,4 @@
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using Application.DTOs.Category;
 using Application.DTOs.Common;
 using Application.Interfaces.Repositories;

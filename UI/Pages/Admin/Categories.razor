@@ -1,0 +1,142 @@
+@page "/admin/categorias"
+@rendermode InteractiveServer
+@attribute [Authorize(Policy = "AdminOnly")]
+
+@using Application.UseCases
+@using Application.DTOs.Common
+@using Application.DTOs.Category
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+@inject ListCategories ListCategoriesUseCase
+@inject CreateCategory CreateCategoryUseCase
+@inject UpdateCategory UpdateCategoryUseCase
+@inject GetCategoryById GetCategoryByIdUseCase
+@inject ChangeCategoryVisibility ChangeCategoryVisibilityUseCase
+@inject NavigationManager NavigationManager
+@inject ISlugifier Slugifier;
+
+<div class="w-100 d-flex justify-content-between flex-column flex-md-row">
+    <h1>Lista de categorias</h1>
+
+    <div class="btns-menu">
+        <button class="btn btn-primary mb-3" type="button" data-bs-toggle="modal" data-bs-target="#create-category">
+            Nueva categoría
+        </button>
+    </div>
+</div>
+
+
+
+
+<!-- New Category Modal -->
+<div class="modal fade" id="create-category" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <EditForm Model="FormModel" FormName="CreateCategory" OnSubmit="handleCreateCategory">
+                <div class="modal-header">
+                    <h2 class="fs-5 modal-title">Crear nueva categoría</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <div class="form-group">
+                        <label class="form-label w-100">Nombre:
+                            <InputText @bind-Value="FormModel!.Name" class="form-control" @bind-Value:after="SlugifyName"/>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label  w-100">Slug:
+                            <InputText @bind-Value="FormModel!.Slug" class="form-control bg-light" readonly  />
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label w-100">Visible?
+                            <InputCheckbox @bind-Value="FormModel!.IsVisible" class="form-check-input" />
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label  w-100">Descripción:
+                            <InputTextArea @bind-Value="FormModel!.Description" class="form-control" />
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    public CategoryModel FormModel { get; set; } = new();
+    public bool IsLoadingList { get; set; } = true;
+    public bool IsLoadingCategory { get; set; } = true;
+
+    public async Task handleCreateCategory(EditContext editContext)
+    {
+        if (editContext.Validate())
+        {
+            await HandleCreateSubmit();
+        }
+    }
+
+    public async Task HandleCreateSubmit()
+    {
+        await CreateCategoryUseCase.ExecuteAsync(FormModel!.ToCreateCategoryInput());
+
+        FormModel = new();
+    }
+
+    private void SlugifyName()
+    {
+        if (string.IsNullOrWhiteSpace(FormModel!.Name))
+        {
+            return;
+        }
+
+        FormModel!.Slug = Slugifier.Slugify(FormModel!.Name);
+    }
+
+    public class CategoryModel
+    {
+        public int? Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Slug { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public bool IsVisible { get; set; } = true;
+
+        public CreateCategoryInput ToCreateCategoryInput()
+        {
+            return new CreateCategoryInput(
+                Name: Name,
+                Slug: Slug,
+                Description: Description,
+                IsVisible: IsVisible
+            );
+        }
+
+        public UpdateCategoryInput? ToUpdateCategoryInput()
+        {
+            if (Id is null) return null;
+
+            return new UpdateCategoryInput(
+                Id: (int) Id, 
+                Name: Name,
+                Slug: Slug,
+                Description: Description,
+                IsVisible: IsVisible
+            );
+        }
+    }
+}
