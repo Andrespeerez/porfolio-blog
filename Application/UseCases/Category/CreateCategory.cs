@@ -15,7 +15,7 @@ public class CreateCategory
 
     public async Task<CategoryOutput?> ExecuteAsync(CreateCategoryInput newCategory)
     {
-        var existing = _categoryRepository.GetBySlugAsync(newCategory.Slug);
+        var existing = await _categoryRepository.GetBySlugAsync(newCategory.Slug);
         if (existing is not null)
         {
             return null;
