@@ -16,25 +16,36 @@
 @inject ChangeCategoryVisibility ChangeCategoryVisibilityUseCase
 @inject NavigationManager NavigationManager
 @inject ISlugifier Slugifier;
+@inject IJSRuntime JSRuntime
 
 <div class="w-100 d-flex justify-content-between flex-column flex-md-row">
     <h1>Lista de categorias</h1>
 
     <div class="btns-menu">
-        <button class="btn btn-primary mb-3" type="button" data-bs-toggle="modal" data-bs-target="#create-category">
+        <button class="btn btn-primary mb-3" type="button" data-bs-toggle="modal" data-bs-target="#create-category"@onclick="HandleNewCategory">
             Nueva categoría
         </button>
     </div>
 </div>
 
-
-
+@if (IsLoadingList)
+{
+    <p>Cargando categorias... Por favor, espere.</p>
+}
+else if(categories!.Items is null || !categories.Items.Any())
+{
+    <p>No hay categorías en la base de datos</p>
+}
+else 
+{
+    <AdminCategoryList CategoryList="categories" OnEdit="HandleEditCategory" />
+}
 
 <!-- New Category Modal -->
 <div class="modal fade" id="create-category" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <EditForm Model="FormModel" FormName="CreateCategory" OnSubmit="handleCreateCategory">
+            <EditForm Model="FormModel" FormName="CreateCategory" OnSubmit="HandleCreateCategory">
                 <div class="modal-header">
                     <h2 class="fs-5 modal-title">Crear nueva categoría</h2>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -77,26 +88,173 @@
     </div>
 </div>
 
+<!-- Edit Category Modal -->
+<div class="modal fade" id="edit-category" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <EditForm Model="FormModel" FormName="EditCategory" OnSubmit="HandleUpdateCategory">
+                <div class="modal-header">
+                    <h2 class="fs-5 modal-title">Editar categoría</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="form-group">
+                        <label class="form-label w-100">Nombre:
+                            <InputText @bind-Value="FormModel!.Name" class="form-control" @bind-Value:after="SlugifyName"/>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label  w-100">Slug:
+                            <InputText @bind-Value="FormModel!.Slug" class="form-control bg-light" readonly  />
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label w-100">Visible?
+                            <InputCheckbox @bind-Value="FormModel!.IsVisible" class="form-check-input" />
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label  w-100">Descripción:
+                            <InputTextArea @bind-Value="FormModel!.Description" class="form-control" />
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
 @code
 {
+    [SupplyParameterFromQuery(Name = "page")]
+    public int? Page { get; set; }
+    [SupplyParameterFromQuery(Name = "ps")]
+    public int? PageSize { get; set; }
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? Query { get; set; }
+
+    public PagedResult<CategoryOutput>? categories { get; set; }
+    public int TotalPages { get; set; } = 1;
+
     public CategoryModel FormModel { get; set; } = new();
     public bool IsLoadingList { get; set; } = true;
     public bool IsLoadingCategory { get; set; } = true;
 
-    public async Task handleCreateCategory(EditContext editContext)
+    protected override async Task OnParametersSetAsync()
     {
-        if (editContext.Validate())
+          await LoadCategories();
+    }
+
+    private async Task LoadCategories()
+    {
+        IsLoadingList = true;
+
+        int effectivePage = (Page is not null && Page > 0) ? Page.Value : 1;
+        int effectivePageSize = (PageSize is not null && PageSize > 0) ? PageSize.Value : 10;
+
+        Dictionary<string, string>? filters = null;
+        if (!string.IsNullOrWhiteSpace(Query))
         {
-            await HandleCreateSubmit();
+            filters = new() { { "name", Query }, { "description", Query } };
+        }
+
+        ListCategoryQuery query = ListCategoryQuery.Create(
+            page: effectivePage,
+            pageSize: effectivePageSize,
+            filters: filters
+        );
+
+        categories = await ListCategoriesUseCase.ExecuteAsync(query);
+
+        TotalPages = categories?.TotalPages ?? 1;
+
+        IsLoadingList = false;
+    }
+
+    private async Task<CategoryOutput?> LoadCategoryById(int id)
+    {
+        return await GetCategoryByIdUseCase.ExecuteAsync(id);
+    }
+
+    public async Task HandleNewCategory()
+    {
+        FormModel = new();
+    }
+
+    public async Task HandleCreateCategory(EditContext editContext)
+    {
+        if (!editContext.Validate())
+        {
+            return;
+        }
+
+        var input = FormModel!.ToCreateCategoryInput();
+        if (input is null)
+        {
+            return;
+        }
+
+        var created = await CreateCategoryUseCase.ExecuteAsync(input);
+        if (created is not null)
+        {
+            await LoadCategories();
+            await JSRuntime.InvokeVoidAsync("eval",
+                "bootstrap.Modal.getOrCreateInstance(document.getElementById('create-category')).hide()");
         }
     }
 
-    public async Task HandleCreateSubmit()
+    public async Task HandleEditCategory(int id)
     {
-        await CreateCategoryUseCase.ExecuteAsync(FormModel!.ToCreateCategoryInput());
+        CategoryOutput? category = await LoadCategoryById(id);
+        if (category is null ) return;
 
-        FormModel = new();
+        FormModel = new(
+            id: category.Id,
+            name: category.Name,
+            slug: category.Slug,
+            description: category.Description ?? string.Empty,
+            isVisible: category.IsVisible
+        );
+
+        await JSRuntime.InvokeVoidAsync("eval",
+            "bootstrap.Modal.getOrCreateInstance(document.getElementById('edit-category')).show()"
+        );
     }
+
+    public async Task HandleUpdateCategory(EditContext editContext)
+    {
+        if (!editContext.Validate())
+        {
+            return;
+        }
+
+        var input = FormModel!.ToUpdateCategoryInput();
+        if (input is null)
+        {
+            return;
+        }
+
+        var updated = await UpdateCategoryUseCase.ExecuteAsync(input);
+        if (updated is not null)
+        {
+            await LoadCategories();
+            await JSRuntime.InvokeVoidAsync("eval",
+                "bootstrap.Modal.getOrCreateInstance(document.getElementById('edit-category')).hide()");
+        }
+    }
+
 
     private void SlugifyName()
     {
@@ -115,6 +273,25 @@
         public string Slug { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public bool IsVisible { get; set; } = true;
+
+        public CategoryModel() {}
+
+        public CategoryModel(int id, string name, string slug, string description, bool isVisible)
+        {
+            Id = id;
+            Name = name;
+            Slug = slug;
+            Description = description;
+            IsVisible = isVisible;
+        }
+
+        public CategoryModel(string name, string slug, string description, bool isVisible)
+        {
+            Name = name;
+            Slug = slug;
+            Description = description;
+            IsVisible = isVisible;
+        }
 
         public CreateCategoryInput ToCreateCategoryInput()
         {
