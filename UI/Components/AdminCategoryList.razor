@@ -1,0 +1,39 @@
+@using Application.DTOs.Common
+@using Application.DTOs.Category
+
+@if(CategoryList is not null && CategoryList.Items is not null)
+{
+<div class="table-responsive mx-3">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col" class="d-none d-md-table-cell">Visible?</th>
+                <th scope="col" class="w-auto text-nowrap">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(CategoryOutput category in CategoryList.Items)
+            {
+                <tr>
+                    <th>@category.Name</th>
+                    <td class="d-none d-md-table-cell">@(category.IsVisible ? "Si" : "No")</td>
+                    <td class="w-auto text-nowrap">
+                        <button type="button" class="btn btn-secondary" @onclick="() => OnEdit.InvokeAsync(category.Id)" aria-label="editar"><span class="bi bi-pencil" aria-hidden="true"></span></button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div> 
+}
+
+
+@code
+{
+    [Parameter]
+    public PagedResult<CategoryOutput>? CategoryList { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnEdit { get; set; }
+}

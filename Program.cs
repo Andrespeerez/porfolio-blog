@@ -35,6 +35,7 @@ builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
  
 // 3) Puertos -> Adaptadores
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IPasswordHasher, IdentityPasswordHasher>();
 builder.Services.AddScoped<ISessionManager, CookieSessionManager>();
 builder.Services.AddScoped<IUserContext, UserContext>();
@@ -54,7 +55,12 @@ builder.Services.AddScoped<UpdateUserByAdmin>();
 builder.Services.AddScoped<ChangePassword>();
 builder.Services.AddScoped<DeleteUser>();
 builder.Services.AddScoped<RestoreUser>();
-
+builder.Services.AddScoped<CreateCategory>();
+builder.Services.AddScoped<UpdateCategory>();
+builder.Services.AddScoped<ListCategories>();
+builder.Services.AddScoped<GetCategoryById>();
+builder.Services.AddScoped<GetCategoriesBySlug>();
+builder.Services.AddScoped<ChangeCategoryVisibility>();
 
 // 5) Seeder
 builder.Services.AddTransient<AdminUserSeeder>();
