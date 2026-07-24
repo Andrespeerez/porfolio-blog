@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Post> Posts => Set<Post>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -21,5 +22,15 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<User>().HasIndex(u => u.Slug).IsUnique();
 
         modelBuilder.Entity<Category>().HasIndex(c => c.Slug).IsUnique();
+
+        modelBuilder.Entity<Post>().HasIndex(p => p.Slug).IsUnique();
+        modelBuilder.Entity<Post>()
+            .HasMany(p => p.Categories)
+            .WithMany(c => c.Posts)
+            .UsingEntity(
+                "PostCategory",
+                l => l.HasOne(typeof(Category)).WithMany().HasForeignKey("CategoryId"),
+                r => r.HasOne(typeof(Post)).WithMany().HasForeignKey("PostId")
+            );
     }
 }

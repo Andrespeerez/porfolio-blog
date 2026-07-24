@@ -21,6 +21,8 @@ public class User
     public DateTime? UpdatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
 
+    public List<Post> Posts { get; set; } = new();
+
 
     // factory
     public static User Create(string email, string rawPassword, IPasswordHasher hasher, bool isAdmin = false)
