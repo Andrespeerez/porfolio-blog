@@ -5,7 +5,7 @@ namespace Application.DTOs.Category;
 public record CategoryOutput(
     [Required] int Id,
     [Required, StringLength(100)] string Name,
-    [Required, StringLength(100)] string Slug,
+    [Required, StringLength(100), RegularExpression("^[a-z0-9-]+$")] string Slug,
     bool IsVisible,
     [StringLength(500)] string? Description
 )
