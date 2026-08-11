@@ -62,6 +62,7 @@ builder.Services.AddScoped<ListCategories>();
 builder.Services.AddScoped<GetCategoryById>();
 builder.Services.AddScoped<GetCategoriesBySlug>();
 builder.Services.AddScoped<ChangeCategoryVisibility>();
+builder.Services.AddScoped<CreatePost>();
 
 // 5) Seeder
 builder.Services.AddTransient<AdminUserSeeder>();

@@ -24,11 +24,11 @@ public class Post
         User user,
         string slug,
         string title,
-        string? description,
-        string? metaTitle,
-        string? coverUrl,
-        string? ogCoverUrl,
-        PostStatus status
+        PostStatus status,
+        string? description = null,
+        string? metaTitle = null,
+        string? coverUrl = null,
+        string? ogCoverUrl = null
     )
     {
         return new()
