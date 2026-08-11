@@ -36,6 +36,7 @@ builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 // 3) Puertos -> Adaptadores
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IPasswordHasher, IdentityPasswordHasher>();
 builder.Services.AddScoped<ISessionManager, CookieSessionManager>();
 builder.Services.AddScoped<IUserContext, UserContext>();

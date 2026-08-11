@@ -1,4 +1,4 @@
-namespace Application.DTOs.Category;
+namespace Application.DTOs.Post;
 
 public record ListPostQuery(
     int Page = 1,
