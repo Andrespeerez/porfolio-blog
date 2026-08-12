@@ -71,6 +71,13 @@ public class Post
         UpdatedAt = DateTime.UtcNow;
     }
 
+    public void ChangeStatus(
+        PostStatus status
+    )
+    {
+        Status = status;
+    }
+
     public void SoftDelete()
     {
         if (DeletedAt is not null) return;

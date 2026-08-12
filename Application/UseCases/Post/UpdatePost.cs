@@ -13,10 +13,15 @@ public class UpdatePost
         _postRepository = postRepository;
     }
 
-    public async Task<PostOutput?> ExecuteAsync(UpdatePostInput updatePost)
+    public async Task<PostOutput?> ExecuteAsync(UpdatePostInput updatePost, User user)
     {
         Post? post = await _postRepository.GetByIdAsync(updatePost.Id);
         if (post is null)
+        {
+            return null;
+        }
+
+        if (post.UserId != user.Id)
         {
             return null;
         }
