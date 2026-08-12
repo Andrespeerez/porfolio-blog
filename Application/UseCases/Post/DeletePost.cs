@@ -24,12 +24,12 @@ public class DeletePost
             return null;
         }
 
-        if (!user.IsAdmin || user.Id != post.UserId)
+        if (!user.IsAdmin && user.Id != post.UserId)
         {
             return null;
         }
 
-        post.SoftDelete();
+        await _postRepository.DeleteAsync(post);
 
         return PostOutput.FromEntity(post);        
     }

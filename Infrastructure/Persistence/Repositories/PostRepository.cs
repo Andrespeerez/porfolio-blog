@@ -21,10 +21,10 @@ public class PostRepository : IPostRepository
 
         var query = _db.Posts.AsNoTracking();
 
+        var pred = PredicateBuilder.New<Post>();
+
         if (options.Filters is not null && options.Filters.Count > 0)
         {
-            var pred = PredicateBuilder.New<Post>();
-
             foreach(var filter in options.Filters)
             {
                 var key = filter.Key.ToLower();
@@ -40,16 +40,19 @@ public class PostRepository : IPostRepository
                         break;
                 }
 
-                if (user is not null)
-                {
-                    pred.And(x => user.IsAdmin || x.UserId == user.Id);
-                }
-
-                pred.And(x => deleted ? x.DeletedAt != null : x.DeletedAt == null);
-
-                query.Where(pred);
+                query = query.Where(pred);
             }
         }
+
+        if (user is not null)
+        {
+            pred.And(x => user.IsAdmin || x.UserId == user.Id);
+        }
+
+        pred.And(x => deleted ? x.DeletedAt != null : x.DeletedAt == null);
+
+        query = query.Where(pred);
+
 
         int totalCount = await query.CountAsync();
 
@@ -87,6 +90,27 @@ public class PostRepository : IPostRepository
 
     public async Task UpdateAsync(Post post)
     {
+        _db.Posts.Update(post);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task ChangeStatus(Post post, PostStatus status)
+    {
+        post.ChangeStatus(status);
+        _db.Posts.Update(post);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(Post post)
+    {
+        post.SoftDelete();
+        _db.Posts.Update(post);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task RestoreAsync(Post post)
+    {
+        post.Restore();
         _db.Posts.Update(post);
         await _db.SaveChangesAsync();
     }

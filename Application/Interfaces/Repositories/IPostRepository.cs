@@ -11,4 +11,7 @@ public interface IPostRepository
     Task<Post?> GetBySlugAsync(string slug);
     Task AddAsync(Post post);
     Task UpdateAsync(Post post);
+    Task ChangeStatus(Post post, PostStatus status);
+    Task DeleteAsync(Post post);
+    Task RestoreAsync(Post post);
 }

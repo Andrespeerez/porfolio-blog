@@ -36,6 +36,8 @@ public class UpdatePost
             updatePost.Status
         );
 
+        await _postRepository.UpdateAsync(post);
+
         return PostOutput.FromEntity(post);
     }
 }

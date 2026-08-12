@@ -24,12 +24,12 @@ public class RestorePost
             return null;
         }
 
-        if (!user.IsAdmin || user.Id != post.UserId)
+        if (!user.IsAdmin && user.Id != post.UserId)
         {
             return null;
         }
 
-        post.Restore();
+        await _postRepository.RestoreAsync(post);
 
         return PostOutput.FromEntity(post);        
     }

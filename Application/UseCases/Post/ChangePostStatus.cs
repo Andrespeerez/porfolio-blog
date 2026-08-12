@@ -16,7 +16,7 @@ public class ChangePostStatus
     public async Task<PostOutput?> ExecuteAsync(UpdatePostInput newPostStatusChange, User user)
     {
         Post? post = await _postRespository.GetByIdAsync(newPostStatusChange.Id);
-        if (post is null || post.UserId != user.Id || !user.IsAdmin)
+        if (post is null || post.UserId != user.Id && !user.IsAdmin)
         {
             return null;
         }
@@ -26,7 +26,7 @@ public class ChangePostStatus
             return null;
         }
 
-        post.ChangeStatus(newPostStatusChange.Status);
+        await _postRespository.ChangeStatus(post, newPostStatusChange.Status);
 
         return PostOutput.FromEntity(post);
     }
