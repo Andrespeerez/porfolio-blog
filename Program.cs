@@ -68,6 +68,8 @@ builder.Services.AddScoped<ChangePostStatus>();
 builder.Services.AddScoped<ListPostAdmin>();
 builder.Services.AddScoped<ListDeletedPostAdmin>();
 builder.Services.AddScoped<ListPost>();
+builder.Services.AddScoped<DeletePost>();
+builder.Services.AddScoped<RestorePost>();
 
 // 5) Seeder
 builder.Services.AddTransient<AdminUserSeeder>();
