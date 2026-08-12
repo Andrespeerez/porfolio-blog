@@ -16,7 +16,7 @@ public class PostRepository : IPostRepository
         _db = db;
     }
 
-    public async Task<PagedResult<Post>?> GetPostAsync(ListPostQuery options, User? user = null)
+    public async Task<PagedResult<Post>?> GetPostAsync(ListPostQuery options, User? user = null, bool deleted = false)
     {
 
         var query = _db.Posts.AsNoTracking();
@@ -44,6 +44,8 @@ public class PostRepository : IPostRepository
                 {
                     pred.And(x => user.IsAdmin || x.UserId == user.Id);
                 }
+
+                pred.And(x => deleted ? x.DeletedAt != null : x.DeletedAt == null);
 
                 query.Where(pred);
             }
