@@ -16,8 +16,9 @@ public class PostRepository : IPostRepository
         _db = db;
     }
 
-    public async Task<PagedResult<Post>?> GetPostAsync(ListPostQuery options)
+    public async Task<PagedResult<Post>?> GetPostAsync(ListPostQuery options, User? user = null)
     {
+
         var query = _db.Posts.AsNoTracking();
 
         if (options.Filters is not null && options.Filters.Count > 0)
@@ -37,6 +38,11 @@ public class PostRepository : IPostRepository
                     case "description":
                         pred.Or(x => x.Description!.ToLower().Contains(value));
                         break;
+                }
+
+                if (user is not null)
+                {
+                    pred.And(x => user.IsAdmin || x.UserId == user.Id);
                 }
 
                 query.Where(pred);
